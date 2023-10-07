@@ -1,73 +1,86 @@
 import { useState } from "react";
 import { useSignup } from "../hooks/useSignup";
+import { Button, Card, Form, Alert, Container } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 const Signup = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [number, setNumber] = useState("");
   const [password, setPassword] = useState("");
   const { signup, error, isLoading } = useSignup();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(email, password);
-    await signup(email, password);
+    await signup(name, email, number, password);
+    setName("");
+    setEmail("");
+    setNumber("");
+    setPassword("");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <form className="bg-white border rounded-lg px-8 pt-6 pb-8 mb-4">
-        <h3 className="text-2xl text-center mb-4 font-semibold">Sign Up</h3>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2 flex justify-left"
-            htmlFor="email"
-          >
-            Email
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="email"
-            type="email"
-            onChange={(e) => setEmail(e.target.value)}
-            value={email}
-            placeholder="Email"
-          />
-        </div>
-        <div className="mb-6">
-          <label
-            className="flex justify-left block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="password"
-          >
-            Password
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="password"
-            type="password"
-            onChange={(e) => setPassword(e.target.value)}
-            value={password}
-            placeholder="Password"
-          />
-        </div>
-        <div className="flex justify-end w-full">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-            onClick={handleSubmit}
-          >
-            Sign Up
-          </button>
-        </div>
+    <Container
+      className="d-flex align-items-center justify-content-center"
+      style={{ minHeight: "100vh" }}
+    >
+      <div className="w-100" style={{ maxWidth: "400px" }}>
+        <Card>
+          <Card.Body>
+            <h2 className="text-center mb-4">Sign Up</h2>
+            {error && <Alert variant="danger">{JSON.stringify(error)}</Alert>}
+            <Form onSubmit={handleSubmit}>
+              <Form.Group id="name">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </Form.Group>
 
-        {error && (
-          <div
-            class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:text-red-400"
-            role="alert"
-          >
-            {error}
-          </div>
-        )}
-      </form>
-    </div>
+              <Form.Group id="email">
+                <Form.Label>E-Mail</Form.Label>
+                <Form.Control
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Form.Group>
+
+              <Form.Group id="number">
+                <Form.Label>Mobile Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  required
+                  value={number}
+                  onChange={(e) => setNumber(e.target.value)}
+                />
+              </Form.Group>
+
+              <Form.Group id="password">
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </Form.Group>
+
+              <Button disabled={isLoading} className="w-100 mt-3" type="submit">
+                Sign Up
+              </Button>
+            </Form>
+          </Card.Body>
+        </Card>
+        <div className="w-100 text-center mt-2">
+          Already have an account? <Link to="/login">Log In!</Link>
+        </div>
+      </div>
+    </Container>
   );
 };
 export default Signup;
