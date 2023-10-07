@@ -13,7 +13,7 @@ const Navbar = () => {
         <div className="flex justify-end">
           <button
             onClick={handleClick}
-            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
           >
             Logout
           </button>
