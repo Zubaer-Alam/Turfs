@@ -8,6 +8,7 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [number, setNumber] = useState("");
   const [password, setPassword] = useState("");
+  console.log(number,password)
   const { signup, error, isLoading } = useSignup();
 
   const handleSubmit = async (e) => {
