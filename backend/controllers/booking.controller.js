@@ -1,7 +1,7 @@
 const Booking = require("../models/booking.model");
 
 const createBooking = async (req, res) => {
-  const { turfName, date, time, email } = req.body;
+  const { turfName, date, time, number } = req.body;
 
   const existingBooking = await Booking.findOne({ turfName, date, time });
 
@@ -10,7 +10,7 @@ const createBooking = async (req, res) => {
   }
 
   try {
-    const booking = await Booking.create({ turfName, date, time, email });
+    const booking = await Booking.create({ turfName, date, time, number });
     res.status(200).json(booking);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -19,8 +19,8 @@ const createBooking = async (req, res) => {
 
 const getBooking = async (req, res) => {
   try {
-    email = req.query.email;
-    const bookings = await Booking.find({ email: email });
+    const number = req.query.number;
+    const bookings = await Booking.find({ number: number });
 
     if (bookings.length === 0) {
       return res

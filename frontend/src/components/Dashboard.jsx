@@ -8,14 +8,11 @@ const Dashboard = () => {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [error, setError] = useState(null);
-
-  const data = JSON.parse(localStorage.getItem("user"));
-
-  console.log(data.email);
   const [bookingData, setBookingData] = useState([]);
 
+  const data = JSON.parse(localStorage.getItem("user"));
   useEffect(() => {
-    fetch(`http://localhost:3000/bookings?email=${data.email}`, {
+    fetch(`http://localhost:3000/bookings?number=${data.number}`, {
       headers: {
         Authorization: `Bearer ${data.token}`,
       },
@@ -27,7 +24,7 @@ const Dashboard = () => {
 
   const createBooking = async (e) => {
     e.preventDefault();
-    const booking = { turfName, date, time, email: data.email };
+    const booking = { turfName, date, time, number: data.number };
     const response = await fetch("http://localhost:3000/bookings", {
       method: "POST",
       body: JSON.stringify(booking),
@@ -38,7 +35,7 @@ const Dashboard = () => {
     });
 
     if (response.ok) {
-      fetch(`http://localhost:3000/bookings?email=${data.email}`, {
+      fetch(`http://localhost:3000/bookings?number=${data.number}`, {
         headers: {
           Authorization: `Bearer ${data.token}`,
         },
@@ -50,9 +47,10 @@ const Dashboard = () => {
       setTurfName("");
       setDate("");
       setTime("");
+      setError(null);
     }
     if (!response.ok) {
-      response.json().then((data) => setError(data.error)); // Handle the error response
+      response.json().then((data) => setError(data.error));
     }
   };
 
@@ -65,9 +63,9 @@ const Dashboard = () => {
         <div className="p-1">
           <Card>
             <Card.Body>
-              Username : {data.name}
+              Username : {data.username}
               <br />
-              Email : {data.email}
+              Number : {data.number}
               <br />
             </Card.Body>
           </Card>
