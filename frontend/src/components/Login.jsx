@@ -26,7 +26,6 @@ const Login = () => {
           <Card.Body>
             <h2 className="text-center mb-4">Log In</h2>
             {error && <Alert variant="danger">{JSON.stringify(error)}</Alert>}
-
             <Form onSubmit={handleSubmit}>
               <Form.Group id="number">
                 <Form.Label>Mobile Number</Form.Label>

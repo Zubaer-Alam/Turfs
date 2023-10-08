@@ -7,6 +7,7 @@ const Dashboard = () => {
   const [turfName, setTurfName] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [error, setError] = useState(null);
 
   const data = JSON.parse(localStorage.getItem("user"));
 
@@ -50,6 +51,9 @@ const Dashboard = () => {
       setDate("");
       setTime("");
     }
+    if (!response.ok) {
+      response.json().then((data) => setError(data.error)); // Handle the error response
+    }
   };
 
   return (
@@ -86,6 +90,7 @@ const Dashboard = () => {
         <Card>
           <Card.Body>
             <h2 className="text-center mb-4">Book Turf</h2>
+            {error && <Alert variant="danger">{JSON.stringify(error)}</Alert>}
             <Form onSubmit={createBooking}>
               <Form.Group id="name">
                 <Form.Label>Select Turf</Form.Label>

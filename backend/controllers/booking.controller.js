@@ -3,7 +3,12 @@ const Booking = require("../models/booking.model");
 const createBooking = async (req, res) => {
   const { turfName, date, time, email } = req.body;
 
-  // add doc to db
+  const existingBooking = await Booking.findOne({ turfName, date, time });
+
+  if (existingBooking) {
+    return res.status(400).json({ error: "This slot is booked" });
+  }
+
   try {
     const booking = await Booking.create({ turfName, date, time, email });
     res.status(200).json(booking);
