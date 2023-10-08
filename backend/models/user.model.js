@@ -21,9 +21,6 @@ const userSchema = new mongoose.Schema({
 
 //Static signup
 userSchema.statics.signup = async function (username, email, number, password) {
-  if (!email || !password) {
-    throw Error("All fields must be filled");
-  }
   if (!validator.isEmail(email)) {
     throw Error("Invalid Email");
   }

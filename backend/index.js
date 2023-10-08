@@ -12,7 +12,7 @@ const mongoose = require("mongoose");
 app.use(cors(corsOptions));
 app.use(express.json());
 
-app.use("/booking", bookingRoutes);
+app.use("/bookings", bookingRoutes);
 app.use("/user", userRoutes);
 
 mongoose

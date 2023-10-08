@@ -1,30 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, Card, Form, Alert, Container } from "react-bootstrap";
 import { useAuthContext } from "../hooks/useAuthContext";
+import { Booking } from "./Booking";
 
 const Dashboard = () => {
   const [turfName, setTurfName] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const { user } = useAuthContext();
-  console.log(turfName);
-  console.log(date);
-  console.log(time);
 
-  const book = async (e) => {
+  const data = JSON.parse(localStorage.getItem("user"));
+
+  console.log(data.email);
+  const [bookingData, setBookingData] = useState([]);
+
+  useEffect(() => {
+    fetch(`http://localhost:3000/bookings?email=${data.email}`, {
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => setBookingData(data))
+      .catch((error) => console.error("Error fetching booking data:", error));
+  }, []);
+
+  const createBooking = async (e) => {
     e.preventDefault();
-    const booking = { turfName, date, time };
-
-    const response = await fetch("http://localhost:3000/booking", {
+    const booking = { turfName, date, time, email: data.email };
+    const response = await fetch("http://localhost:3000/bookings", {
       method: "POST",
       body: JSON.stringify(booking),
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${data.token}`,
       },
     });
-    const json = await response.json();
 
     if (response.ok) {
+      fetch(`http://localhost:3000/bookings?email=${data.email}`, {
+        headers: {
+          Authorization: `Bearer ${data.token}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => setBookingData(data))
+        .catch((error) => console.error("Error fetching booking data:", error));
+
       setTurfName("");
       setDate("");
       setTime("");
@@ -36,21 +57,36 @@ const Dashboard = () => {
       className="d-flex align-items-center justify-content-center"
       style={{ minHeight: "100vh" }}
     >
-      <div className="w-100 p-4" style={{ maxWidth: "400px" }}>
-        <Card>
-          <Card.Body>
-            Username : {user && user.username}
-            <br />
-            Email : {user && user.email}
-            <br />
-          </Card.Body>
-        </Card>
+      <div className="w-100 p-1" style={{ maxWidth: "400px" }}>
+        <div className="p-1">
+          <Card>
+            <Card.Body>
+              Username : {data.name}
+              <br />
+              Email : {data.email}
+              <br />
+            </Card.Body>
+          </Card>
+        </div>
+        <div className="p-1">
+          <Card>
+            <Card.Body>
+              {Array.isArray(bookingData) ? (
+                bookingData.map((booking, index) => (
+                  <Booking key={index} booking={booking} />
+                ))
+              ) : (
+                <p>No bookings for this user</p>
+              )}
+            </Card.Body>
+          </Card>
+        </div>
       </div>
       <div className="w-100" style={{ maxWidth: "400px" }}>
         <Card>
           <Card.Body>
             <h2 className="text-center mb-4">Book Turf</h2>
-            <Form onSubmit={book}>
+            <Form onSubmit={createBooking}>
               <Form.Group id="name">
                 <Form.Label>Select Turf</Form.Label>
                 <Form.Select
@@ -63,6 +99,8 @@ const Dashboard = () => {
                   <option value="Alpha">Alpha</option>
                   <option value="Bravo">Bravo</option>
                   <option value="Charlie">Charlie</option>
+                  <option value="Delta">Delta</option>
+                  <option value="Echo">Echo</option>
                 </Form.Select>
               </Form.Group>
 
