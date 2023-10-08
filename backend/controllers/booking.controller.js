@@ -18,9 +18,15 @@ const createBooking = async (req, res) => {
 };
 
 const getBooking = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit)||2;
+  const skip = (page - 1) * limit;
   try {
+    const totalBookings = await Booking.countDocuments();
     const number = req.query.number;
-    const bookings = await Booking.find({ number: number });
+    const bookings = await Booking.find({ number: number })
+      .skip(skip)
+      .limit(limit);
 
     if (bookings.length === 0) {
       return res
