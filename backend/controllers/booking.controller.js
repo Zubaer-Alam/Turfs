@@ -19,7 +19,7 @@ const createBooking = async (req, res) => {
 
 const getBooking = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit)||2;
+  const limit = parseInt(req.query.limit)|| 2;
   const skip = (page - 1) * limit;
   try {
     const totalBookings = await Booking.countDocuments();
@@ -27,13 +27,16 @@ const getBooking = async (req, res) => {
     const bookings = await Booking.find({ number: number })
       .skip(skip)
       .limit(limit);
-
     if (bookings.length === 0) {
       return res
         .status(404)
         .json({ message: "No bookings found for the specified user." });
     }
-    res.status(200).json(bookings);
+    res.status(200).json({
+      totalPages: Math.ceil(totalBookings / limit),
+      currentPage: page,
+      bookings,
+    });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
   }

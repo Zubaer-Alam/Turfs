@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Button, Card, Form, Alert, Container } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Form,
+  Alert,
+  Container,
+  Pagination,
+} from "react-bootstrap";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { Booking } from "./Booking";
 
@@ -9,18 +16,29 @@ const Dashboard = () => {
   const [time, setTime] = useState("");
   const [error, setError] = useState(null);
   const [bookingData, setBookingData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const data = JSON.parse(localStorage.getItem("user"));
+
   useEffect(() => {
-    fetch(`http://localhost:3000/bookings?number=${data.number}`, {
+    fetch(`http://localhost:3000/bookings?number=${data.number}&page=${currentPage}`, {
       headers: {
         Authorization: `Bearer ${data.token}`,
       },
     })
       .then((response) => response.json())
-      .then((data) => setBookingData(data))
+      .then((data) => {
+        setBookingData(data.bookings);
+        setCurrentPage(data.currentPage);
+        setTotalPages(data.totalPages);
+      })
       .catch((error) => console.error("Error fetching booking data:", error));
-  }, []);
+  }, [currentPage]);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   const createBooking = async (e) => {
     e.preventDefault();
@@ -54,6 +72,15 @@ const Dashboard = () => {
     }
   };
 
+  let items = [];
+  for (let i = 1; i <= totalPages; i++) {
+    items.push(
+      <Pagination.Item key={i} active={i === currentPage}>
+        {i}
+      </Pagination.Item>
+    );
+  }
+
   return (
     <Container
       className="d-flex align-items-center justify-content-center"
@@ -63,7 +90,7 @@ const Dashboard = () => {
         <div className="p-1">
           <Card>
             <Card.Body>
-              Username : {data.username}
+              Username : {data.name}
               <br />
               Number : {data.number}
               <br />
@@ -72,6 +99,12 @@ const Dashboard = () => {
         </div>
         <div className="p-1">
           <Card>
+            <p>page:{currentPage}</p>
+            <Pagination className="justify-content-center">
+              <Pagination.Prev onClick={()=>handlePageChange(currentPage-1)}/>
+              {items}
+              <Pagination.Next onClick={()=>handlePageChange(currentPage+1)}/>
+            </Pagination>
             <Card.Body>
               {Array.isArray(bookingData) ? (
                 bookingData.map((booking, index) => (
