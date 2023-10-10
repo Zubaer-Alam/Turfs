@@ -40,7 +40,7 @@ const Login = () => {
               <Form.Group id="password">
                 <Form.Label>Password</Form.Label>
                 <Form.Control
-                  type="text"
+                  type="text"//toggle
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
