@@ -17,8 +17,43 @@ const BookTurf = () => {
   const [bookingData, setBookingData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [turfNames, setTurfNames] = useState([]);
+  const [slots, setSlots] = useState([]);
 
   const data = JSON.parse(localStorage.getItem("user"));
+
+  useEffect(() => {
+    fetch("http://localhost:3000/turfs/turfNames", {
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setTurfNames(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching turf names:", error);
+      });
+  }, []);
+
+  const updateSlots = (selectedTurf) => {
+    fetch(`http://localhost:3000/turfs/slots?turfName=${selectedTurf}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setSlots(data);
+        console.log(data)
+      })
+      .catch((error) => {
+        console.error("Error fetching slots:", error);
+      });
+  };
+
+  useEffect(() => {
+    if (turfName) {
+      updateSlots(turfName);
+    }
+  }, [turfName]);
 
   useEffect(() => {
     fetch(
@@ -130,6 +165,7 @@ const BookTurf = () => {
           <Card.Body>
             <h2 className="text-center mb-4">Book Turf</h2>
             {error && <Alert variant="danger">{JSON.stringify(error)}</Alert>}
+
             <Form onSubmit={createBooking}>
               <Form.Group id="name">
                 <Form.Label>Select Turf</Form.Label>
@@ -139,12 +175,12 @@ const BookTurf = () => {
                   value={turfName}
                   onChange={(e) => setTurfName(e.target.value)}
                 >
-                  <option>Select</option>
-                  <option value="Alpha">Alpha</option>
-                  <option value="Bravo">Bravo</option>
-                  <option value="Charlie">Charlie</option>
-                  <option value="Delta">Delta</option>
-                  <option value="Echo">Echo</option>
+                  <option value="">Select</option>
+                  {turfNames.map((turfName) => (
+                    <option key={turfName} value={turfName}>
+                      {turfName}
+                    </option>
+                  ))}
                 </Form.Select>
               </Form.Group>
 
@@ -159,13 +195,19 @@ const BookTurf = () => {
               </Form.Group>
 
               <Form.Group id="time">
-                <Form.Label>Select Time</Form.Label>
-                <Form.Control
-                  type="time"
+                <Form.Label>Select Slot</Form.Label>
+                <Form.Select
                   required
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                />
+                >
+                  <option value="">Slots</option>
+                  {slots.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ))}
+                </Form.Select>
               </Form.Group>
 
               <Button className="w-100 mt-3" type="submit">

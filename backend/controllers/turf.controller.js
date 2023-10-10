@@ -16,6 +16,31 @@ const createTurf = async (req, res) => {
   }
 };
 
+const getTurfNames = async (req, res) => {
+  try {
+    const turfNames = await Turf.distinct("turfName");
+    res.status(200).json(turfNames);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const getSlotNames = async (req, res) => {
+  try {
+    const turfName = req.query.turfName;
+    const turf = await Turf.findOne({ turfName });
+
+    if (!turf) {
+      return res.status(404).json({ error: "Turf not found" });
+    }
+    const slotNames = turf.slots;
+    res.status(200).json(slotNames);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 const getTurfs = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 2;
@@ -41,4 +66,4 @@ const getTurfs = async (req, res) => {
   }
 };
 
-module.exports = { createTurf, getTurfs };
+module.exports = { createTurf, getTurfs, getTurfNames, getSlotNames };

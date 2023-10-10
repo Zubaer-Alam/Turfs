@@ -26,7 +26,6 @@ const App = () => {
         <Navbar className="sticky-top" bg="primary" data-bs-theme="dark">
           <Container>
             <Navbar.Brand className="fw-bold ">Turf</Navbar.Brand>
-            <Navbar.Toggle />
             {user && (
               <Button variant="danger" onClick={handleClick}>
                 Logout
