@@ -1,25 +1,40 @@
 const Booking = require("../models/booking.model");
 
 const createBooking = async (req, res) => {
-  const { turfName, date, time, number } = req.body;
+  const { turfName, date, time, dayTime, nightTime, number } = req.body;
 
-  const existingBooking = await Booking.findOne({ turfName, date, time });
+  const existingBooking = await Booking.findOne({
+    turfName,
+    date,
+    time,
+    dayTime,
+    nightTime,
+    number,
+  });
 
   if (existingBooking) {
     return res.status(400).json({ error: "This slot is booked" });
   }
 
   try {
-    const booking = await Booking.create({ turfName, date, time, number });
+    const booking = await Booking.create({
+      turfName,
+      date,
+      time,
+      dayTime,
+      nightTime,
+      number,
+    });
     res.status(200).json(booking);
   } catch (error) {
     res.status(400).json({ error: error.message });
+    console.log(error)
   }
 };
 
 const getBooking = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit)|| 2;
+  const limit = parseInt(req.query.limit) || 2;
   const skip = (page - 1) * limit;
   try {
     const totalBookings = await Booking.countDocuments();

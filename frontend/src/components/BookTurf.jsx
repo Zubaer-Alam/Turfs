@@ -10,15 +10,24 @@ import {
 import { Booking } from "./Booking";
 
 const BookTurf = () => {
+  const [error, setError] = useState(null);
   const [turfName, setTurfName] = useState("");
   const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [error, setError] = useState(null);
+
   const [bookingData, setBookingData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
   const [turfNames, setTurfNames] = useState([]);
-  const [slots, setSlots] = useState([]);
+
+  const [slots, setSlots] = useState([]); //Dropdown menu options
+  const [time, setTime] = useState(""); //selected time slot
+
+  const [dayTime, setDayTime] = useState("");
+  const [nightTime, setNightTime] = useState("");
+
+  const [dayTimes, setDayTimes] = useState([]);
+  const [nightTimes, setNightTimes] = useState([]);
 
   const data = JSON.parse(localStorage.getItem("user"));
 
@@ -42,12 +51,36 @@ const BookTurf = () => {
       .then((response) => response.json())
       .then((data) => {
         setSlots(data);
-        console.log(data)
       })
       .catch((error) => {
         console.error("Error fetching slots:", error);
       });
   };
+
+  useEffect(() => {
+    if (turfName) {
+      updateSlots(turfName);
+    }
+  }, [turfName]);
+
+  useEffect(() => {
+    if (time) {
+      fetch(
+        `http://localhost:3000/turfs/times?turfName=${turfName}&time=${time}`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (time === "day") {
+            setDayTimes(data);
+          } else if (time === "night") {
+            setNightTimes(data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching times:", error);
+        });
+    }
+  }, [time]);
 
   useEffect(() => {
     if (turfName) {
@@ -79,7 +112,15 @@ const BookTurf = () => {
 
   const createBooking = async (e) => {
     e.preventDefault();
-    const booking = { turfName, date, time, number: data.number };
+    const booking = {
+      turfName,
+      date,
+      time,
+      dayTime,
+      nightTime,
+      number: data.number,
+    };
+    console.log(booking);
     const response = await fetch("http://localhost:3000/bookings", {
       method: "POST",
       body: JSON.stringify(booking),
@@ -110,7 +151,7 @@ const BookTurf = () => {
   };
 
   let items = [];
-  for (let i = 1; i <= totalPages; i++) {
+  for (let i = 1; i < totalPages; i++) {
     items.push(
       <Pagination.Item
         key={i}
@@ -139,15 +180,6 @@ const BookTurf = () => {
         </div>
         <div className="p-1">
           <Card>
-            <Pagination className="p-3 justify-content-center">
-              <Pagination.Prev
-                onClick={() => handlePageChange(currentPage - 1)}
-              />
-              {items}
-              <Pagination.Next
-                onClick={() => handlePageChange(currentPage + 1)}
-              />
-            </Pagination>
             <Card.Body>
               {Array.isArray(bookingData) ? (
                 bookingData.map((booking, index) => (
@@ -157,6 +189,9 @@ const BookTurf = () => {
                 <p>No bookings for this user</p>
               )}
             </Card.Body>
+            <Pagination className="p-3 justify-content-center">
+              {items}
+            </Pagination>
           </Card>
         </div>
       </div>
@@ -194,21 +229,61 @@ const BookTurf = () => {
                 />
               </Form.Group>
 
-              <Form.Group id="time">
-                <Form.Label>Select Slot</Form.Label>
-                <Form.Select
-                  required
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                >
-                  <option value="">Slots</option>
-                  {slots.map((slot) => (
-                    <option key={slot} value={slot}>
-                      {slot}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
+              {turfName && (
+                <Form.Group id="slots">
+                  <Form.Label>Select Slot:</Form.Label>
+                  <Form.Select
+                    required
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                  >
+                    <option value="">Slots</option>
+                    {slots.map((slot) => (
+                      <option key={slot} value={slot}>
+                        {slot}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              )}
+
+              {time == "day" && (
+                <Form.Group id="time">
+                  <Form.Label> Select Time:</Form.Label>
+                  <Form.Select
+                    required
+                    value={dayTime}
+                    onChange={(e) => {
+                      setDayTime(e.target.value);
+                    }}
+                  >
+                    <option value="">Slots</option>
+                    {dayTimes.map((timeSlot) => (
+                      <option key={timeSlot} value={timeSlot}>
+                        {timeSlot}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              )}
+
+              {time == "night" && (
+                <Form.Group id="time">
+                  <Form.Label> Select Time:</Form.Label>
+                  <Form.Select
+                    required
+                    value={nightTime}
+                    onChange={(e) => setNightTime(e.target.value)}
+                  >
+                    <option value="">Slots</option>
+                    {nightTimes.map((timeSlot) => (
+                      <option key={timeSlot} value={timeSlot}>
+                        {timeSlot}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              )}
 
               <Button className="w-100 mt-3" type="submit">
                 Book

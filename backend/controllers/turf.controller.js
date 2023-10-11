@@ -41,6 +41,29 @@ const getSlotNames = async (req, res) => {
   }
 };
 
+const getTimeSlots = async (req, res) => {
+  try {
+    const turfName = req.query.turfName;
+    const time = req.query.time;
+
+    const turf = await Turf.findOne({ turfName });
+    let timeSlots;
+
+    if (time === "day") {
+      timeSlots = turf.dayTimes;
+    } else if (time === "night") {
+      timeSlots = turf.nightTimes;
+    } else {
+      return res.status(400).json({ error: "Invalid time slot type" });
+    }
+
+    res.status(200).json(timeSlots);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 const getTurfs = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 2;
@@ -66,4 +89,10 @@ const getTurfs = async (req, res) => {
   }
 };
 
-module.exports = { createTurf, getTurfs, getTurfNames, getSlotNames };
+module.exports = {
+  createTurf,
+  getTurfs,
+  getTurfNames,
+  getSlotNames,
+  getTimeSlots,
+};

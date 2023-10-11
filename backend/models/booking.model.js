@@ -15,6 +15,12 @@ const bookingSchema = new Schema({
     type: String,
     required: true,
   },
+  dayTime: {
+    type: String
+  },
+  nightTime:{
+    type:String,
+  },
   number: {
     type: String,
     required: true,

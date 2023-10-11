@@ -8,6 +8,8 @@ const CreateTurf = () => {
   const [dayTimes, setDayTimes] = useState([]);
   const [nightTimes, setNightTimes] = useState([]);
 
+  const data = JSON.parse(localStorage.getItem("user"));
+
   const createTurf = async (e) => {
     e.preventDefault();
     const turf = { turfName, slots, dayTimes, nightTimes };
@@ -17,6 +19,7 @@ const CreateTurf = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${data.token}`,
         },
         body: JSON.stringify(turf),
       });
@@ -24,10 +27,10 @@ const CreateTurf = () => {
       if (response.ok) {
         const responseData = await response.json();
         console.log("Turf created:", responseData);
-        setTurfName("")
-        setSlots([])
-        setDayTimes([])
-        setNightTimes([])
+        setTurfName("");
+        setSlots([]);
+        setDayTimes([]);
+        setNightTimes([]);
       } else {
         console.error(
           "Error creating turf:",
