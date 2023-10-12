@@ -9,7 +9,7 @@ const {
 } = require("../controllers/turf.controller");
 const requireAuth = require("../middleware/requireAuth");
 
-router.post("/", requireAuth, createTurf);
+router.post("/", createTurf);
 
 router.get("/", requireAuth, getTurfs);
 

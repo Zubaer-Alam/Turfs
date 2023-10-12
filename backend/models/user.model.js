@@ -1,56 +1,57 @@
-const mongoose = require("mongoose");
+const pool = require('../db')
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 
-const userSchema = new mongoose.Schema({
-  username: {
-    type: String,
-  },
-  email: {
-    type: String,
-    unique: true,
-  },
-  number: {
-    type: Number,
-    unique: true,
-  },
-  password: {
-    type: String,
-  },
-});
-
-//Static signup
-userSchema.statics.signup = async function (username, email, number, password) {
-  if (!validator.isEmail(email)) {
-    throw Error("Invalid Email");
+class User {
+  //SIGNUP
+  static async signup(username, email, number, password) {
+    if (!validator.isEmail(email)) {
+      throw new Error("Invalid Email");
+    }
+    if (!validator.isStrongPassword(password)) {
+      throw new Error("Weak Password");
+    }
+    const connection = await pool.getConnection();
+    try {
+      const [existingUser] = await connection.execute(
+        "SELECT * FROM users WHERE number = ?",
+        [number]
+      );
+      if (existingUser.length > 0) {
+        throw new Error("Number already in use");
+      }
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const [result] = await connection.execute(
+        "INSERT INTO users (username, email, number, password) VALUES (?, ?, ?, ?)",
+        [username, email, number, hashedPassword]
+      );
+      return result.insertId;
+    } finally {
+      connection.release();
+    }
   }
-  if (!validator.isStrongPassword(password)) {
-    throw Error("Weak Password");
-  }
+  // LOGIN
+  static async login(number, password) {
+    const connection = await pool.getConnection();
+    try {
+      const [rows] = await connection.execute(
+        "SELECT * FROM users WHERE number = ?",
+        [number]
+      );
+      if (rows.length === 0) {
+        throw new Error("Incorrect Number");
+      }
+      const user = rows[0];
+      const isPasswordMatch = await bcrypt.compare(password, user.password);
+      if (!isPasswordMatch) {
+        throw new Error("Incorrect Password");
+      }
+      return user;
+    } finally {
+      connection.release();
+    }
+  } 
+}
 
-  const exists = await this.findOne({ email });
-  if (exists) {
-    throw Error("Email already in use");
-  }
-  const salt = await bcrypt.genSalt(10);
-  const hash = await bcrypt.hash(password, salt);
-
-  const user = await this.create({ username, email, number, password: hash });
-  return user;
-};
-
-//static login method
-userSchema.statics.login = async function (number, password) {
-  const user = await this.findOne({ number });
-  if (!user) {
-    throw Error("Incorrect Number");
-  }
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) {
-    throw Error("Incorrect Password");
-  }
-
-  return user;
-};
-
-module.exports = mongoose.model("User", userSchema);
+module.exports = User;

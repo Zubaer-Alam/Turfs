@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 
-import { Button, Card, Form, Container } from "react-bootstrap";
+import { Button, Card, Form, Container, Alert } from "react-bootstrap";
 
 const CreateTurf = () => {
   const [turfName, setTurfName] = useState("");
   const [slots, setSlots] = useState([]);
   const [dayTimes, setDayTimes] = useState([]);
   const [nightTimes, setNightTimes] = useState([]);
+  const [error, setError] = useState(null);
 
   const data = JSON.parse(localStorage.getItem("user"));
 
@@ -31,15 +32,12 @@ const CreateTurf = () => {
         setSlots([]);
         setDayTimes([]);
         setNightTimes([]);
+        setError(null);
       } else {
-        console.error(
-          "Error creating turf:",
-          response.status,
-          response.statusText
-        );
+        response.json().then((data) => setError(data.error));
       }
     } catch (error) {
-      console.error("Error creating turf:", error);
+      console.log(error.message);
     }
   };
 
@@ -76,6 +74,7 @@ const CreateTurf = () => {
         <Card>
           <Card.Body>
             <h2 className="text-center mb-4">Create Turf</h2>
+            {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={createTurf}>
               <Form.Group id="name">
                 <Form.Label>Turf Name</Form.Label>
