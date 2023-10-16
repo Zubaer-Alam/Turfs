@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-
 import { Button, Card, Form, Container, Alert } from "react-bootstrap";
 
 const CreateTurf = () => {
   const [turfName, setTurfName] = useState("");
   const [slots, setSlots] = useState([]);
-  const [dayTimes, setDayTimes] = useState([]);
-  const [nightTimes, setNightTimes] = useState([]);
+  const [dayTimes, setDayTimes] = useState([" "]);
+  const [nightTimes, setNightTimes] = useState([" "]);
   const [error, setError] = useState(null);
 
   const data = JSON.parse(localStorage.getItem("user"));
@@ -14,6 +13,7 @@ const CreateTurf = () => {
   const createTurf = async (e) => {
     e.preventDefault();
     const turf = { turfName, slots, dayTimes, nightTimes };
+    console.log(turf)
 
     try {
       const response = await fetch("http://localhost:3000/turfs", {
@@ -24,14 +24,14 @@ const CreateTurf = () => {
         },
         body: JSON.stringify(turf),
       });
-
+      console.log(response);
       if (response.ok) {
         const responseData = await response.json();
         console.log("Turf created:", responseData);
         setTurfName("");
         setSlots([]);
-        setDayTimes([]);
-        setNightTimes([]);
+        setDayTimes([" "]);
+        setNightTimes([" "]);
         setError(null);
       } else {
         response.json().then((data) => setError(data.error));
@@ -49,20 +49,88 @@ const CreateTurf = () => {
     }
   };
 
-  const handleDayTimeChange = (e, time) => {
-    if (e.target.checked) {
-      setDayTimes([...dayTimes, time]);
+  const addDayTimeEntry = () => {
+    const lastTimeRange = dayTimes[dayTimes.length - 1];
+    const [from, to] = lastTimeRange.split(" ");
+
+    if (from && to) {
+      const fromTime = new Date(`1970-01-01T${from}`);
+      const toTime = new Date(`1970-01-01T${to}`);
+      const timeDifferenceInMinutes = (toTime - fromTime) / (1000 * 60);
+
+      if (timeDifferenceInMinutes >= 30) {
+        if (dayTimes.length < 5) {
+          setDayTimes([...dayTimes, ""]);
+        }
+      } else {
+        alert("Each slot should have 30 minutes");
+      }
     } else {
-      setDayTimes(dayTimes.filter((t) => t !== time));
+      setError("Fill in time field");
     }
   };
 
-  const handleNightTimeChange = (e, time) => {
-    if (e.target.checked) {
-      setNightTimes([...nightTimes, time]);
+  const addNightTimeEntry = () => {
+    const lastTimeRange = nightTimes[nightTimes.length - 1];
+    const [from, to] = lastTimeRange.split(" ");
+
+    if (from && to) {
+      const fromTime = new Date(`1970-01-01T${from}`);
+      const toTime = new Date(`1970-01-01T${to}`);
+      const timeDifferenceInMinutes = (toTime - fromTime) / (1000 * 60);
+
+      if (timeDifferenceInMinutes >= 30) {
+        if (nightTimes.length < 5) {
+          setNightTimes([...nightTimes, ""]);
+        }
+      } else {
+        alert("Each slot should have at least 30 minutes");
+      }
     } else {
-      setNightTimes(nightTimes.filter((t) => t !== time));
+      setError("Fill in time field");
     }
+  };
+
+  const removeLastDayTimeEntry = () => {
+    if (dayTimes.length > 0) {
+      const updatedDayTimes = [...dayTimes];
+      updatedDayTimes.pop();
+      setDayTimes(updatedDayTimes);
+      setError(null);
+    }
+  };
+
+  const removeLastNightTimeEntry = () => {
+    if (nightTimes.length > 0) {
+      const updatedNightTimes = [...nightTimes];
+      updatedNightTimes.pop();
+      setNightTimes(updatedNightTimes);
+      setError(null);
+    }
+  };
+
+  const handleDayTimeChange = (value, index, field) => {
+    const updatedDayTimes = [...dayTimes];
+    const timeRange = updatedDayTimes[index].split(" ");
+    if (field === "from") {
+      timeRange[0] = value;
+    } else if (field === "to") {
+      timeRange[1] = value;
+    }
+    updatedDayTimes[index] = timeRange.join(" ");
+    setDayTimes(updatedDayTimes);
+  };
+
+  const handleNightTimeChange = (value, index, field) => {
+    const updatedNightTimes = [...nightTimes];
+    const timeRange = updatedNightTimes[index].split(" ");
+    if (field === "from") {
+      timeRange[0] = value;
+    } else if (field === "to") {
+      timeRange[1] = value;
+    }
+    updatedNightTimes[index] = timeRange.join(" ");
+    setNightTimes(updatedNightTimes);
   };
 
   return (
@@ -109,72 +177,99 @@ const CreateTurf = () => {
                   />
                 </div>
               </Form.Group>
-
-              <Form.Group>
-                <Form.Label>Day Slot:</Form.Label>
-                <div className="d-flex justify-content-center">
-                  <Form.Check
-                    inline
-                    label="8:00 AM"
-                    name="group1"
-                    type="checkbox"
-                    id="day"
-                    checked={dayTimes.includes("8:00 AM")}
-                    onChange={(e) => handleDayTimeChange(e, "8:00 AM")}
-                  />
-                  <Form.Check
-                    inline
-                    label="10:00 AM"
-                    name="group1"
-                    type="checkbox"
-                    id="night"
-                    checked={dayTimes.includes("10:00 AM")}
-                    onChange={(e) => handleDayTimeChange(e, "10:00 AM")}
-                  />
-                  <Form.Check
-                    inline
-                    label="12:00 PM"
-                    name="group1"
-                    type="checkbox"
-                    id="night"
-                    checked={dayTimes.includes("12:00 PM")}
-                    onChange={(e) => handleDayTimeChange(e, "12:00 PM")}
-                  />
+              {slots.includes("day") && (
+                <div>
+                  <Form.Group>
+                    <Form.Label>Day Slots:</Form.Label>
+                    {dayTimes.map((timeRange, index) => (
+                      <div
+                        key={index}
+                        className="d-flex justify-content-center"
+                      >
+                        <Form.Control
+                          type="time"
+                          value={timeRange.split(" ")[0]}
+                          onChange={(e) =>
+                            handleDayTimeChange(e.target.value, index, "from")
+                          }
+                        />
+                        <span> to </span>
+                        <Form.Control
+                          type="time"
+                          value={timeRange.split(" ")[1]}
+                          onChange={(e) =>
+                            handleDayTimeChange(e.target.value, index, "to")
+                          }
+                        />
+                      </div>
+                    ))}
+                    {console.log(dayTimes)}
+                    {dayTimes.length < 5 && (
+                      <Button
+                        variant="outline-secondary"
+                        onClick={addDayTimeEntry}
+                      >
+                        Add
+                      </Button>
+                    )}
+                    {dayTimes.length > 1 && (
+                      <Button
+                        variant="outline-danger"
+                        onClick={removeLastDayTimeEntry}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </Form.Group>
                 </div>
-              </Form.Group>
+              )}
 
-              <Form.Group>
-                <Form.Label>Night Slot:</Form.Label>
-                <div className="d-flex justify-content-center">
-                  <Form.Check
-                    inline
-                    label="8:00 PM"
-                    name="group1"
-                    type="checkbox"
-                    id="day"
-                    checked={nightTimes.includes("8:00 PM")}
-                    onChange={(e) => handleNightTimeChange(e, "8:00 PM")}
-                  />
-                  <Form.Check
-                    inline
-                    label="10:00 PM"
-                    name="group1"
-                    type="checkbox"
-                    id="night"
-                    checked={nightTimes.includes("10:00 PM")}
-                    onChange={(e) => handleNightTimeChange(e, "10:00 PM")}
-                  />
-                  <Form.Check
-                    inline
-                    label="12:00 AM"
-                    name="group1"
-                    type="checkbox"
-                    id="night"
-                    checked={nightTimes.includes("12:00 AM")}
-                    onChange={(e) => handleNightTimeChange(e, "12:00 AM")}
-                  />
+              {slots.includes("night") && (
+                <div>
+                  <Form.Group>
+                    <Form.Label>Night Slots:</Form.Label>
+                    {nightTimes.map((timeRange, index) => (
+                      <div
+                        key={index}
+                        className="d-flex justify-content-center"
+                      >
+                        <Form.Control
+                          type="time"
+                          value={timeRange.split(" ")[0]}
+                          onChange={(e) =>
+                            handleNightTimeChange(e.target.value, index, "from")
+                          }
+                        />
+                        <span> to </span>
+                        <Form.Control
+                          type="time"
+                          value={timeRange.split(" ")[1]}
+                          onChange={(e) =>
+                            handleNightTimeChange(e.target.value, index, "to")
+                          }
+                        />
+                      </div>
+                    ))}
+                    {console.log(nightTimes)}
+                    {nightTimes.length < 5 && (
+                      <Button
+                        variant="outline-secondary"
+                        onClick={addNightTimeEntry}
+                      >
+                        Add
+                      </Button>
+                    )}
+                    {nightTimes.length > 1 && (
+                      <Button
+                        variant="outline-danger"
+                        onClick={removeLastNightTimeEntry}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </Form.Group>
                 </div>
-              </Form.Group>
+              )}
 
               <Button className="w-100 mt-3" type="submit">
                 Create
