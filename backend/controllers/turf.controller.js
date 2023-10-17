@@ -37,11 +37,11 @@ const createTurf = async (req, res) => {
   if (hasDaySlots) {
     const dayTimesData = dayTimes.map((timeRange) => {
       const [fromTime, toTime] = timeRange.split(" ");
-      return [turfId, fromTime, toTime, 1];
+      return [turfId, fromTime, toTime];
     });
 
     const dayTimesInsertQuery =
-      "INSERT INTO DayTimes (turf_id, from_time, to_time, is_available) VALUES ?";
+      "INSERT INTO DayTimes (turf_id, from_time, to_time) VALUES ?";
 
     try {
       await pool.query(dayTimesInsertQuery, [dayTimesData]);
@@ -56,11 +56,11 @@ const createTurf = async (req, res) => {
   if (hasNightSlots) {
     const nightTimesData = nightTimes.map((timeRange) => {
       const [fromTime, toTime] = timeRange.split(" ");
-      return [turfId, fromTime, toTime, 1];
+      return [turfId, fromTime, toTime];
     });
 
     const nightTimesInsertQuery =
-      "INSERT INTO NightTimes (turf_id, from_time, to_time, is_available) VALUES ?";
+      "INSERT INTO NightTimes (turf_id, from_time, to_time) VALUES ?";
 
     try {
       await pool.query(nightTimesInsertQuery, [nightTimesData]);
