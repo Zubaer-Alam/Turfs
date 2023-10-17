@@ -23,8 +23,7 @@ const BookTurf = () => {
   const [slots, setSlots] = useState([]); //Dropdown menu options
   const [time, setTime] = useState(""); //selected time slot
 
-  const [dayTime, setDayTime] = useState("");
-  const [nightTime, setNightTime] = useState("");
+  const [timeSlot, setTimeSlot] = useState("");
 
   const [dayTimes, setDayTimes] = useState([]);
   const [nightTimes, setNightTimes] = useState([]);
@@ -71,8 +70,10 @@ const BookTurf = () => {
         .then((response) => response.json())
         .then((data) => {
           if (time === "day") {
+            console.log(data)
             setDayTimes(data);
           } else if (time === "night") {
+            console.log(data)
             setNightTimes(data);
           }
         })
@@ -113,13 +114,13 @@ const BookTurf = () => {
   const createBooking = async (e) => {
     e.preventDefault();
     const booking = {
-      turfName,
+      userNumber: data.number,
       date,
-      time,
-      dayTime,
-      nightTime,
-      number: data.number,
+      turfName,
+      slots: time,
+      timeSlot,
     };
+
     console.log(booking);
     const response = await fetch("http://localhost:3000/bookings", {
       method: "POST",
@@ -253,10 +254,8 @@ const BookTurf = () => {
                   <Form.Label> Select Time:</Form.Label>
                   <Form.Select
                     required
-                    value={dayTime}
-                    onChange={(e) => {
-                      setDayTime(e.target.value);
-                    }}
+                    value={timeSlot}
+                    onChange={(e) => seTimeSlot(e.target.value)}
                   >
                     <option value="">Slots</option>
                     {dayTimes.map((timeSlot) => (
@@ -273,10 +272,11 @@ const BookTurf = () => {
                   <Form.Label> Select Time:</Form.Label>
                   <Form.Select
                     required
-                    value={nightTime}
-                    onChange={(e) => setNightTime(e.target.value)}
+                    value={timeSlot}
+                    onChange={(e) => setTimeSlot(e.target.value)}
                   >
                     <option value="">Slots</option>
+                    {nightTimes}
                     {nightTimes.map((timeSlot) => (
                       <option key={timeSlot} value={timeSlot}>
                         {timeSlot}

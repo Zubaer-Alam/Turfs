@@ -122,28 +122,27 @@ const getSlotNames = async (req, res) => {
 const getTimeSlots = async (req, res) => {
   const selectedTurf = req.query.turfName;
   const selectedTime = req.query.time; // "day" or "night" or both
+  console.log(selectedTime);
+  let timesQuery;
 
   try {
-    let selectDayTimesQuery =
-      "SELECT from_time, to_time FROM DayTimes WHERE turf_id = (SELECT turf_id FROM Turf WHERE turf_name = ?)";
-
     if (selectedTime === "day") {
-      selectDayTimesQuery +=
-        " AND TIME_TO_SEC(from_time) < TIME_TO_SEC('12:00:00')";
+      timesQuery =
+        "SELECT from_time, to_time FROM DayTimes WHERE turf_id = (SELECT turf_id FROM Turf WHERE turf_name = ?)";
     } else if (selectedTime === "night") {
-      selectDayTimesQuery +=
-        " AND TIME_TO_SEC(from_time) >= TIME_TO_SEC('12:00:00')";
+      timesQuery =
+        "SELECT from_time, to_time FROM NightTimes WHERE turf_id = (SELECT turf_id FROM Turf WHERE turf_name = ?)";
     }
 
-    const [dayTimesResult] = await pool.query(selectDayTimesQuery, [
-      selectedTurf,
-    ]);
+    const [times] = await pool.query(timesQuery, [selectedTurf]);
 
-    if (dayTimesResult.length > 0) {
-      const dayTimes = dayTimesResult.map(
+    console.log(times);
+
+    if (times.length) {
+      const timeSlots = times.map(
         (row) => `${row.from_time} to ${row.to_time}`
       );
-      res.status(200).json(dayTimes);
+      res.status(200).json(timeSlots);
     } else {
       res.status(200).json([]);
     }
