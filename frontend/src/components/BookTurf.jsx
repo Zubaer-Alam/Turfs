@@ -39,7 +39,7 @@ const BookTurf = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        setTurfNames(data);
+        setTurfNames(data.turfNames);
       })
       .catch((error) => {
         console.error("Error fetching turf names:", error);
@@ -50,7 +50,7 @@ const BookTurf = () => {
     fetch(`http://localhost:3000/turfs/slots?turfName=${selectedTurf}`)
       .then((response) => response.json())
       .then((data) => {
-        setSlots(data);
+        setSlots(data.slotNames);
       })
       .catch((error) => {
         console.error("Error fetching slots:", error);
@@ -211,7 +211,8 @@ const BookTurf = () => {
                   onChange={(e) => setTurfName(e.target.value)}
                 >
                   <option value="">Select</option>
-                  {turfNames.map((turfName) => (
+                  {console.log(turfNames)}
+                  {turfNames?.map((turfName) => (
                     <option key={turfName} value={turfName}>
                       {turfName}
                     </option>
